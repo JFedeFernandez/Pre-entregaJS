@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de estudiantes</title>
+    <link rel="stylesheet" href="./css/styles.css" media="none" onload="if(media!='all')media='all'">
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <main>
+        <h1>Registro de estudiantes</h1>
+        <form class="formulario" action="">
+            <label for="name">Nombre/s</label>
+            <input type="text" placeholder="Nombre Completo" id="name" name="name" required>
+            <label for="apellido">Apellido/s</label>
+            <input type="text" placeholder="Apellido" id="apellido" name="apellido" required>
+            <label for="dni">DNI</label>
+            <input type="text" name="dni" id="dni" placeholder="Ej: 13125144" title="Debe ingresar un DNI de 8 dígitos" required>
+            <label for="edad">Edad</label>
+            <input type="number" name="edad" id="edad" placeholder="Ej: 25" title="Ingrese una edad entre 0 y 90" required>
+            <div>
+                <button type="submit">Aceptar</button>
+                <button type="submit">Cancelar</button>
+            </div>
+        </form>
+    </main>
+    <script src="registroEstudiantes.js"></script>
+</body>
+</html>
