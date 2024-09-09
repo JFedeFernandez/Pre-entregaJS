@@ -1,4 +1,3 @@
-let dniVerificar = 0
 let continuar = true
 
 const estudiantes = []
@@ -20,7 +19,6 @@ const buscarEstudiante = (dni) =>  {
         }
         i++
     }
-
     return encontrado
 }
 
