@@ -1,5 +1,5 @@
 let continuar = true
-
+let documento = 0
 const estudiantes = []
 
 
@@ -121,9 +121,9 @@ while (continuar) {
             alert(listaEstudiantes())
             break
         case '3':
-            verificarDNI = parseInt(prompt("Ingrese el DNI del alumno"))
-            if (buscarEstudiante(verificarDNI)) {
-                eliminarEstudiante(verificarDNI)
+            documento = parseInt(prompt("Ingrese el DNI del alumno"))
+            if (buscarEstudiante(verificarDNI(documento))) {
+                eliminarEstudiante(verificarDNI(documento))
             } else {
                 alert(`El DNI ingresado no existe`)
             }
@@ -133,7 +133,6 @@ while (continuar) {
             break
         default:
             alert("Opción no válida")
-            continuar = false
             break
     }
 }
