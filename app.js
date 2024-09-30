@@ -171,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let i = 0
         while (i < localStorage.length){
             const objeto = JSON.parse(localStorage.getItem(i.toString()))
-            console.log(objeto)
             estudiantes.push(objeto)
             i++
         }
@@ -385,7 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
         table.appendChild(tituloTh2)
         table.appendChild(tituloTh3)
         table.appendChild(tituloTh4)
-        console.log(estudiantes)
         estudiantes.forEach(element => {
             const fila = document.createElement('tr')
             const columna1 = document.createElement('td')
