@@ -1,26 +1,16 @@
-let continuar = true
-let documento = 0
-const estudiantes = []
-
+let estudiantes = []
 
 /**
  * Busca un estudiante en el arreglo "estudiantes"
  * 
  * @param {integer} dni - DNI del estudiante que queremos buscar
- * @returns {boolean} - Retorna "true" si encontramos el dni y retorna "false" si no se encuentra
+ * @returns {boolean} - Retorna "true" si encontramos el dni, ademas si tiene 8 numeros y si es mayor a 0. Retorna "false" si no se encuentra
  */
-const buscarEstudiante = (dni) =>  {
-    let encontrado = false
-    let i = 0
-
-    while (!encontrado && i < estudiantes.length){
-        if (estudiantes[i].dni === dni) {
-            encontrado = true
-        }
-        i++
-    }
-    return encontrado
+function verificar(dni){
+    const a = estudiantes.filter(estudiante => estudiante.dni === dni)
+    return !(a.length === 1) && dni.toString().length === 8 && dni > 0
 }
+
 
 /**
  * Función que nos dice si un string tiene un número
@@ -33,50 +23,49 @@ const verificarNombreAp = (nombre) => {
 }
 
 /**
- * Función que nos dice si el dni ingresado esta correcto 
- * 
- * @param {integer} dni - DNI que queremos verificar que cumpla las condiciones
- * @returns {boolean} - Retorna "true" si el dni cumple la condicion y "false" si no la cumple
- */
-function verificarDNI(dni) {
-    const dniString = dni.toString()
-    return dniString.length === 8 && dni > 0 && !buscarEstudiante(dni)
-}
-
-/**
  * Función que nos permite agregar un estudiante al arreglo
  * 
  */
 const agregarEstudiante = () => {
-    let estudiante = {
-        nombre: "",
-        apellido: "",
-        dni: "",
-        edad: ""
-    }
-    estudiante.apellido = prompt("Ingrese el Apellido del estudiante").toUpperCase()
-    while (verificarNombreAp(estudiante.apellido)){
+
+    let apellido = prompt("Ingrese el Apellido del estudiante").toUpperCase()
+    while (verificarNombreAp(apellido)){
         alert("Apellido incorrecto, ingrese un apellido correcto")
-        estudiante.apellido = prompt("Apellido del estudiante").toUpperCase()
+        apellido = prompt("Apellido del estudiante").toUpperCase()
     }
-    estudiante.nombre = prompt("Ingrese el Nombre del estudiante").toUpperCase()
-    while (verificarNombreAp(estudiante.nombre)){
-        alert("Apellido incorrecto, ingrese un apellido correcto")
-        estudiante.nombre = prompt("Nombre del estudiante").toUpperCase()
+
+    let nombre = prompt("Nombre del estudiante").toUpperCase()
+    while (verificarNombreAp(nombre)){
+        alert("Nombre incorrecto, ingrese un nombre correcto")
+        nombre = prompt("Nombre del estudiante").toUpperCase()
     }
-    estudiante.dni = parseInt(prompt("Ingrese el DNI del estudiante"))
-    while (isNaN(estudiante.dni) || !verificarDNI(estudiante.dni)) {
+
+    let dni = parseInt(prompt("DNI del estudiante"))
+    while (isNaN(dni) || !verificar(dni)) {
         alert("DNI incorrecto o repetido, ingrese correctamente el dni")
-        estudiante.dni = parseInt(prompt("DNI del estudiante"))
+        dni = parseInt(prompt("DNI del estudiante"))
     }
-    estudiante.edad = parseInt(prompt("Ingrese la Edad del estudiante"))
-    while ((estudiante.edad < 0 || isNaN(estudiante.edad))){
+
+    let edad = parseInt(prompt("Edad del estudiante"))
+    while ((edad < 0 || isNaN(edad))){
         alert("Edad incorrecta")
-        estudiante.edad = parseInt(prompt("Edad del estudiante"))
+        edad = parseInt(prompt("Edad del estudiante"))
     }
 
-    estudiantes.push(estudiante)
+    let dir = prompt("Ingrese la dirección del estudiante")
 
+    let tel = parseInt(prompt("Ingrese el número de celular del alumno"))
+    let lengthTel = tel.toString()
+    while (lengthTel.length < 8 || isNaN(tel)){
+        tel = parseInt(prompt("Ingrese el número de celular del alumno"))
+        lengthTel = tel.toString()
+    }
+
+    let fechaN = prompt("Ingrese la fecha de nacimiento del alumno 'dd/mm/aaaa'")
+
+
+    let alumno = new Estudiante(nombre,apellido,dir,tel,dni,fechaN,edad)
+    estudiantes.push(alumno)
     alert(`El estudiante ha sido agregado correctamente!`)
     
 }
@@ -104,35 +93,7 @@ const listaEstudiantes = () => {
 
     let mensaje = "Lista de estudiantes: \n"
     estudiantes.forEach((estudiante,index) => {
-        mensaje += `${index+1}) \n Nombre: ${estudiante.nombre} \n Apellido: ${estudiante.apellido} \n DNI: ${estudiante.dni} \n Edad: ${estudiante.edad} \n`
+        mensaje += `${index+1}) \n Nombre: ${estudiante.getNombre} \n Apellido: ${estudiante.getApellido} \n DNI: ${estudiante.getDni} \n Edad: ${estudiante.getEdad} \n Cel: ${estudiante.getTelefono} \n Fecha Nacimiento: ${estudiante.getFechaNacimiento} \n Dirección: ${estudiante.getDireccion} \n`
     })
-
     return mensaje
-}
-
-
-while (continuar) {
-    let opt = prompt("\n MANEJO DE ESTUDIANTES \n 1- Agregar Estudiante. \n 2- Listar estudiantes. \n 3- Eliminar estudiante. \n 4- Salir.")
-    switch (opt) {
-        case '1':
-            agregarEstudiante()
-            break
-        case '2':
-            alert(listaEstudiantes())
-            break
-        case '3':
-            documento = parseInt(prompt("Ingrese el DNI del alumno"))
-            if (buscarEstudiante(verificarDNI(documento))) {
-                eliminarEstudiante(verificarDNI(documento))
-            } else {
-                alert(`El DNI ingresado no existe`)
-            }
-            break
-        case '4':
-            continuar = false
-            break
-        default:
-            alert("Opción no válida")
-            break
-    }
 }
