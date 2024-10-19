@@ -1,8 +1,33 @@
 import { Estudiante } from "./Estudiante.js"
 
 const estudiantes = JSON.parse(localStorage.getItem('estudiantes')) || []
-let materias = JSON.parse(localStorage.getItem('materias')) || []
-let notas = JSON.parse(localStorage.getItem('notas')) || []
+
+/**
+ * Muestra una alerta de éxito cuando se ha agregado un alumno correctamente.
+ */
+const alertCompletado = () => {
+    Swal.fire({
+        title: "Alumno agregado correctamente!",
+        text: "Has click en el boton para continuar!",
+        icon: "success"
+    });
+}
+
+/**
+ * Muestra una alerta de error con una lista de mensajes proporcionados.
+ * @param {Array} msjArray - Array de mensajes que se mostrarán en la alerta.
+ */
+const alertEditableList = (msjArray) => {
+    let texto = ''
+    msjArray.forEach(e => {
+        texto += `${e} \n`
+    })
+    Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        html: `<div style="color: red;">${texto.replace(/\n/g, '<br>')}</div>`
+    });
+}
 
 /**
  * Crea un label para nuestro formulario
@@ -110,7 +135,7 @@ const comprobarInputs = (nombre,apellido,dni,edad,mensaje,ar) => {
     if (verificarNombre(apellido)) {
         mensaje.push('Apellido incorrecto, ingrese nombres sin numeros')
     }
-    if ((edad <= 11 && isNaN(edad))) {
+    if ((edad <= 11 && !isNaN(edad))) {
         mensaje.push('Edad incorrecta, ingrese solo numeros o una edad mayor o igual a 11')
     }
     if (!verificarDNI(dni,ar)) {
@@ -154,12 +179,7 @@ const procesarFormulario = (e) => {
 
     //Comprobacion de los datos, si hay datos invalidos, entra al 'if', caso contrario 'else'
     if (comprobarInputs(nombre,apellido,dni,edad,mensaje,estudiantes)){
-        mensaje.forEach(e => {
-            const li = document.createElement('li')
-            li.style = 'Color: red;list-style: none;'
-            li.textContent = e
-            ul.appendChild(li)
-        });
+        alertEditableList(mensaje)
     } else {
         const alumno = new Estudiante(apellido,nombre,Number(edad),dni)
         estudiantes.push(alumno)
@@ -171,13 +191,8 @@ const procesarFormulario = (e) => {
                 element.remove()
             });
         }
-        const li = document.createElement('li')
-        li.style = 'Color: Green; list-style: none;'
-        li.textContent = 'Alumno agregado correctamente!'
-        ul.appendChild(li)
+        alertCompletado()
     }
-    main.appendChild(ul)
-
 }
 
 /**
@@ -212,6 +227,32 @@ const cargarFormulario = () => {
     crearBotones('Cancelar',form,div)
 
     main.appendChild(form)
+}
+
+/**
+ * Muestra una alerta de confirmación antes de modificar los datos de un alumno.
+ * Si el usuario confirma, se procede a guardar los cambios en el almacenamiento local.
+ */
+const alertEditar = () => {
+    Swal.fire({
+        title: "Estas seguro que lo deseas modificar?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Si, modificalo!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: "Modificado!",
+                text: "El alumno ha sido modificado.",
+                icon: "success"
+            });
+            cargarStorage()
+            const main = document.querySelector('main')
+            main.innerHTML = ''
+        }
+    });
 }
 
 /**
@@ -252,55 +293,105 @@ const editarAlumno = () => {
 
                     //Comprobacion de los nuevos datos, si hay datos invalidos, entra al 'if', caso contrario 'else'
                     if (comprobarInputs(nombre.value,apellido.value,dni.value,edad.value,msj,copyArray)){
+                        alertEditableList(msj)
                         const main = document.querySelector('main')
-                        const ul = document.createElement('ul')
-                        msj.forEach(e => {
-                            const li = document.createElement('li')
-                            li.style = 'Color: red;list-style: none;'
-                            li.textContent = e
-                            ul.appendChild(li)
-                        })
-                        main.appendChild(ul)
+                        main.innerHTML = ''
                     } else {
-                        alumno._apellido = apellido.value
-                        alumno._nombre = nombre.value
+                        alumno._apellido = apellido.value.toUpperCase()
+                        alumno._nombre = nombre.value.toUpperCase()
                         alumno._edad = edad.value
                         alumno._dni = dni.value
+                        e.preventDefault()
+                        alertEditar()
                     }
+                })
 
-                    //Carga de lo editado
-                    cargarStorage()
+                const btnCancelar = document.getElementById('cancelar')
+                btnCancelar.addEventListener('click', () => {
+                    const main = document.querySelector('main')
+                    main.innerHTML = ''
                 })
             })
         }
     })
 }
 
+/**
+ * Muestra una alerta de confirmación antes de eliminar un alumno.
+ * Si el usuario confirma, el alumno es eliminado del array 'estudiantes' y se actualiza el almacenamiento local.
+ *
+ * @param {number} id - El índice del alumno en el array 'estudiantes' que se desea eliminar.
+ */
+const alertEliminar = (id) => {
+    Swal.fire({
+        title: "Estas seguro que lo deseas eliminar?",
+        text: "Si lo eliminas no podras volver atras!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Si, eliminalo!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: "Eliminado!",
+                text: "El alumno ha sido eliminado.",
+                icon: "success"
+            });
+            estudiantes.splice(id,1)
+            cargarStorage()
+                
+            const main = document.querySelector('main')
+            main.innerHTML = ''
+        }
+    });
+}
+
+/**
+ * Función que agrega eventos de eliminación a los botones correspondientes y elimina un alumno del array.
+ * Al hacer clic en un botón "Eliminar", elimina el alumno, actualiza el localStorage y muestra un mensaje de confirmación.
+ */
 const eliminarAlumno = () => {
     const btns = document.querySelectorAll('button')
     btns.forEach(element => {
         if (element.innerText === 'Eliminar'){
             element.addEventListener('click', () => {
-                estudiantes.splice(element.id,1)
-                cargarStorage()
-                
-                const main = document.querySelector('main')
-                main.innerHTML = ''
-                
-                const ul = document.createElement('ul')
-                const li = document.createElement('li')
-                li.innerText = 'Alumno eliminado correctamente'
-                ul.appendChild(li)
-                main.appendChild(ul)
+
+                alertEliminar(element.id)
+
             })
         }
     })
 }
 
+/**
+ * Ordena la tabla de estudiantes según la columna seleccionada (apellido, nombre, dni o edad)
+ * 
+ * @param {Event} e - El evento generado al hacer click en un botón o elemento para ordenar
+ */
 const ordenar = (e) => {
+    const main = document.querySelector('main')
+
+    const table = document.querySelector('table')
+    table.innerHTML = ''
+
+    const tituloTh1 = document.createElement('th')
+    const tituloTh2 = document.createElement('th')
+    const tituloTh3 = document.createElement('th')
+    const tituloTh4 = document.createElement('th')
+    tituloTh1.textContent = 'DNI'
+    tituloTh2.textContent = 'Apellido'
+    tituloTh3.textContent = 'Nombre'
+    tituloTh4.textContent = 'Edad'
+
+    table.appendChild(tituloTh1)
+    table.appendChild(tituloTh2)
+    table.appendChild(tituloTh3)
+    table.appendChild(tituloTh4)
+
     switch (e.target.id){
         case 'apellido':
-            const estudiantesOrdenados = estudiantes.slice().sort((a, b) => {
+            const ordenadosPorAp = estudiantes.slice().sort((a, b) => {
                 const nombreA = a._apellido.toLowerCase();
                 const nombreB = b._apellido.toLowerCase();
                 
@@ -309,25 +400,7 @@ const ordenar = (e) => {
                 return 0;
             });
 
-            const main = document.querySelector('main')
-
-            const table = document.querySelector('table')
-            table.innerHTML = ''
-            const tituloTh1 = document.createElement('th')
-            const tituloTh2 = document.createElement('th')
-            const tituloTh3 = document.createElement('th')
-            const tituloTh4 = document.createElement('th')
-            tituloTh1.textContent = 'DNI'
-            tituloTh2.textContent = 'Apellido'
-            tituloTh3.textContent = 'Nombre'
-            tituloTh4.textContent = 'Edad'
-
-            table.appendChild(tituloTh1)
-            table.appendChild(tituloTh2)
-            table.appendChild(tituloTh3)
-            table.appendChild(tituloTh4)
-
-            estudiantesOrdenados.forEach(element => {
+            ordenadosPorAp.forEach(element => {
                 const fila = document.createElement('tr')
                 const columna1 = document.createElement('td')
                 const columna2 = document.createElement('td')
@@ -346,12 +419,92 @@ const ordenar = (e) => {
             main.appendChild(table)
             break
         case 'nombre':
+            const ordenadosPorNom = estudiantes.slice().sort((a, b) => {
+                const nombreA = a._nombre.toLowerCase();
+                const nombreB = b._nombre.toLowerCase();
+                
+                if (nombreA < nombreB) return -1;
+                if (nombreA > nombreB) return 1;
+                return 0;
+            });
+
+            ordenadosPorNom.forEach(element => {
+                const fila = document.createElement('tr')
+                const columna1 = document.createElement('td')
+                const columna2 = document.createElement('td')
+                const columna3 = document.createElement('td')
+                const columna4 = document.createElement('td')
+                columna1.textContent = element._dni
+                columna2.textContent = element._apellido
+                columna3.textContent = element._nombre
+                columna4.textContent = element._edad
+                fila.appendChild(columna1)
+                fila.appendChild(columna2)
+                fila.appendChild(columna3)
+                fila.appendChild(columna4)
+                table.appendChild(fila)
+            })
+            main.appendChild(table)
             break
         case 'dni':
+            const ordenadosPorDni = estudiantes.slice().sort((a, b) => {
+                const nombreA = parseInt(a._dni);
+                const nombreB = parseInt(b._dni);
+                
+                if (nombreA < nombreB) return -1;
+                if (nombreA > nombreB) return 1;
+                return 0;
+            });
+
+            ordenadosPorDni.forEach(element => {
+                const fila = document.createElement('tr')
+                const columna1 = document.createElement('td')
+                const columna2 = document.createElement('td')
+                const columna3 = document.createElement('td')
+                const columna4 = document.createElement('td')
+                columna1.textContent = element._dni
+                columna2.textContent = element._apellido
+                columna3.textContent = element._nombre
+                columna4.textContent = element._edad
+                fila.appendChild(columna1)
+                fila.appendChild(columna2)
+                fila.appendChild(columna3)
+                fila.appendChild(columna4)
+                table.appendChild(fila)
+            })
+            main.appendChild(table)
             break
         case 'edad':
+            const ordenadosPorEdad = estudiantes.slice().sort((a, b) => {
+                const nombreA = a._edad;
+                const nombreB = b._edad;
+                
+                if (nombreA < nombreB) return -1;
+                if (nombreA > nombreB) return 1;
+                return 0;
+            });
+
+            ordenadosPorEdad.forEach(element => {
+                const fila = document.createElement('tr')
+                const columna1 = document.createElement('td')
+                const columna2 = document.createElement('td')
+                const columna3 = document.createElement('td')
+                const columna4 = document.createElement('td')
+                columna1.textContent = element._dni
+                columna2.textContent = element._apellido
+                columna3.textContent = element._nombre
+                columna4.textContent = element._edad
+                fila.appendChild(columna1)
+                fila.appendChild(columna2)
+                fila.appendChild(columna3)
+                fila.appendChild(columna4)
+                table.appendChild(fila)
+            })
+            main.appendChild(table)
+            break
     }
 }
+
 
 /**
  * Función que carga el contenido dinámico de la interfaz de usuario, como la creación, edición,
@@ -392,16 +545,33 @@ const cargaDOM = () => {
         const btnAceptar = document.getElementById('aceptar')
         btnAceptar.addEventListener('click', procesarFormulario)
 
-
+        const btnCancelar = document.getElementById('cancelar')
+        btnCancelar.addEventListener('click', () => {
+            main.innerHTML = ''
+        })
     })
 
     // Evento para editar un alumno
     const btnEditarAlumno = document.getElementById('editarAlumno')
 
-    btnEditarAlumno.addEventListener('click', () => {
+    btnEditarAlumno.addEventListener('click', (e) => {
+        e.preventDefault()
         const main = document.querySelector('main')
         main.innerHTML = ''
     
+        //Navegador de busqueda
+        const buscador = document.createElement('input')
+        buscador.id = 'buscador'
+        buscador.className = 'buscadorLista'
+        buscador.placeholder = 'Buscar..'
+
+        const barraBuscadora = document.createElement('div')
+        barraBuscadora.className = 'buscador'
+
+        barraBuscadora.appendChild(buscador)
+        
+        main.appendChild(barraBuscadora)
+
         const table = document.createElement('table')
         const tituloTh1 = document.createElement('th')
         const tituloTh2 = document.createElement('th')
@@ -430,7 +600,6 @@ const cargaDOM = () => {
             btnEditar.id = `${index}`
             btnEditar.textContent = 'Editar'
             btnEditar.classList.add('btn','btn-primary','btn-sm')
-            btnEditar.addEventListener('click',editarAlumno)
             columna1.textContent = element._dni
             columna2.textContent = element._apellido
             columna3.textContent = element._nombre
@@ -446,15 +615,82 @@ const cargaDOM = () => {
 
         main.appendChild(table)
 
+        editarAlumno()
+
+        function renderTable(estudiantes) {
+            // Limpiar las filas actuales de la tabla
+            const filas = document.querySelectorAll('tr');
+            filas.forEach((fila, index) => {
+                if (index >= 0) fila.remove(); // No borrar la fila de los encabezados
+            });
         
+            // Añadir filas para cada estudiante
+            estudiantes.forEach((element) => {
+                const fila = document.createElement('tr');
+                const columna1 = document.createElement('td');
+                const columna2 = document.createElement('td');
+                const columna3 = document.createElement('td');
+                const columna4 = document.createElement('td');
+                const columna5 = document.createElement('td')
+                const btnEditar = document.createElement('button')
+                btnEditar.id = `${element.index}`
+                btnEditar.textContent = 'Editar'
+                btnEditar.classList.add('btn','btn-primary','btn-sm')
+                columna1.textContent = element.estudiante._dni;
+                columna2.textContent = element.estudiante._apellido;
+                columna3.textContent = element.estudiante._nombre;
+                columna4.textContent = element.estudiante._edad;
+                columna5.appendChild(btnEditar)
+                fila.appendChild(columna1);
+                fila.appendChild(columna2);
+                fila.appendChild(columna3);
+                fila.appendChild(columna4);
+                fila.appendChild(columna5)
+                table.appendChild(fila);
+            });
+            editarAlumno()
+        }
+
+        buscador.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toUpperCase();
+
+            const filteredNEstudiantes = estudiantes.map((estudiante, index) => {
+                if (
+                    estudiante._dni.toString() === searchTerm ||
+                    estudiante._apellido.toUpperCase().includes(searchTerm.toUpperCase()) ||
+                    estudiante._nombre.toUpperCase().includes(searchTerm.toUpperCase()) ||
+                    estudiante._edad.toString().includes(searchTerm)
+                ) {
+                    return { estudiante, index }; // Retorna un objeto con el estudiante y su índice
+                }
+                return null; // Si no cumple, devuelve null
+            })
+            .filter(item => item !== null);
+
+            renderTable(filteredNEstudiantes)
+        });
     })
 
     // Evento para eliminar un alumno
     const btnEliminarAlumno = document.getElementById('eliminarAlumno')
 
-    btnEliminarAlumno.addEventListener('click', () => {
+    btnEliminarAlumno.addEventListener('click', (e) => {
+        e.preventDefault()
         const main = document.querySelector('main')
         main.innerHTML = ''
+
+        //Navegador de busqueda
+        const buscador = document.createElement('input')
+        buscador.id = 'buscador'
+        buscador.className = 'buscadorLista'
+        buscador.placeholder = 'Buscar..'
+
+        const barraBuscadora = document.createElement('div')
+        barraBuscadora.className = 'buscador'
+
+        barraBuscadora.appendChild(buscador)
+        
+        main.appendChild(barraBuscadora)
     
         const table = document.createElement('table')
         const tituloTh1 = document.createElement('th')
@@ -484,7 +720,6 @@ const cargaDOM = () => {
             btnEliminar.id = `${index}`
             btnEliminar.textContent = 'Eliminar'
             btnEliminar.classList.add('btn','btn-danger','btn-sm')
-            btnEliminar.addEventListener('click',eliminarAlumno)
             columna1.textContent = element._dni
             columna2.textContent = element._apellido
             columna3.textContent = element._nombre
@@ -498,7 +733,64 @@ const cargaDOM = () => {
             table.appendChild(fila)
         })
 
+        main.appendChild(barraBuscadora)
         main.appendChild(table)
+
+        eliminarAlumno()
+
+        function renderTable(estudiantes) {
+            // Limpiar las filas actuales de la tabla
+            const filas = document.querySelectorAll('tr');
+            filas.forEach((fila, index) => {
+                if (index >= 0) fila.remove(); // No borrar la fila de los encabezados
+            });
+        
+            // Añadir filas para cada estudiante
+            estudiantes.forEach((element) => {
+                const fila = document.createElement('tr');
+                const columna1 = document.createElement('td');
+                const columna2 = document.createElement('td');
+                const columna3 = document.createElement('td');
+                const columna4 = document.createElement('td');
+                const columna5 = document.createElement('td')
+                const btnEliminar = document.createElement('button')
+                btnEliminar.id = `${element.index}`
+                btnEliminar.textContent = 'Eliminar'
+                btnEliminar.classList.add('btn','btn-danger','btn-sm')
+                columna1.textContent = element.estudiante._dni;
+                columna2.textContent = element.estudiante._apellido;
+                columna3.textContent = element.estudiante._nombre;
+                columna4.textContent = element.estudiante._edad;
+                columna5.appendChild(btnEliminar)
+                fila.appendChild(columna1);
+                fila.appendChild(columna2);
+                fila.appendChild(columna3);
+                fila.appendChild(columna4);
+                fila.appendChild(columna5)
+                table.appendChild(fila);
+            });
+            eliminarAlumno()
+        }
+
+        buscador.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toUpperCase();
+
+            const filteredNEstudiantes = estudiantes.map((estudiante, index) => {
+                if (
+                    estudiante._dni.toString() === searchTerm ||
+                    estudiante._apellido.toUpperCase().includes(searchTerm.toUpperCase()) ||
+                    estudiante._nombre.toUpperCase().includes(searchTerm.toUpperCase()) ||
+                    estudiante._edad.toString().includes(searchTerm)
+                ) {
+                    return { estudiante, index }; // Retorna un objeto con el estudiante y su índice
+                }
+                return null; // Si no cumple, devuelve null
+            })
+            .filter(item => item !== null);
+
+            renderTable(filteredNEstudiantes)
+        });
+
     })
 
 
@@ -509,10 +801,15 @@ const cargaDOM = () => {
         const main = document.querySelector('main')
         main.innerHTML = ''
         
-        //Filtro para como acomodarlos
+        //Navegador de busqueda y filtro para ordenar
         const dropdown = document.createElement('div')
         dropdown.className = 'dropdown'
         dropdown.style = 'margin-top: 10px'
+
+        const buscador = document.createElement('input')
+        buscador.id = 'buscador'
+        buscador.className = 'buscadorLista'
+        buscador.placeholder = 'Buscar..'
 
         const btnDropdown = document.createElement('button')
         btnDropdown.classList.add('btn','btn-secondary', 'dropdown-toggle')
@@ -545,7 +842,15 @@ const cargaDOM = () => {
         })
 
         dropdown.appendChild(dropdownMenu)
-        main.appendChild(dropdown)
+
+        const barraBuscadora = document.createElement('div')
+        barraBuscadora.className = 'buscador'
+
+
+        barraBuscadora.appendChild(dropdown)
+        barraBuscadora.appendChild(buscador)
+        
+        main.appendChild(barraBuscadora)
 
         // Creacion de la tabla de alumnos
         const table = document.createElement('table')
@@ -562,7 +867,7 @@ const cargaDOM = () => {
         table.appendChild(tituloTh3)
         table.appendChild(tituloTh4)
 
-        estudiantes.forEach((element, index) => {
+        estudiantes.forEach((element) => {
             const fila = document.createElement('tr')
             const columna1 = document.createElement('td')
             const columna2 = document.createElement('td')
@@ -580,9 +885,60 @@ const cargaDOM = () => {
         })
 
         main.appendChild(table)
-
+        
         const sortApellido = document.getElementById('apellido')
         sortApellido.addEventListener('click',ordenar)
+
+        const sortNombre = document.getElementById('nombre')
+        sortNombre.addEventListener('click',ordenar)
+
+        const sortEdad = document.getElementById('edad')
+        sortEdad.addEventListener('click',ordenar)
+
+        const sortDni = document.getElementById('dni')
+        sortDni.addEventListener('click',ordenar)
+
+
+        function renderTable(estudiantes) {
+            // Limpiar las filas actuales de la tabla
+            const filas = document.querySelectorAll('tr');
+            filas.forEach((fila, index) => {
+                if (index >= 0) fila.remove(); // No borrar la fila de los encabezados
+            });
+        
+            // Añadir filas para cada estudiante
+            estudiantes.forEach((element) => {
+                const fila = document.createElement('tr');
+                const columna1 = document.createElement('td');
+                const columna2 = document.createElement('td');
+                const columna3 = document.createElement('td');
+                const columna4 = document.createElement('td');
+                columna1.textContent = element._dni;
+                columna2.textContent = element._apellido;
+                columna3.textContent = element._nombre;
+                columna4.textContent = element._edad;
+                fila.appendChild(columna1);
+                fila.appendChild(columna2);
+                fila.appendChild(columna3);
+                fila.appendChild(columna4);
+                table.appendChild(fila);
+            });
+        }
+        
+        // Evento de búsqueda en vivo
+        buscador.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toUpperCase();
+            const filteredEstudiantes = estudiantes.filter((estudiante, index)=> {
+                return (
+                    estudiante._dni.toString() === searchTerm ||
+                    estudiante._apellido.toUpperCase().includes(searchTerm) ||
+                    estudiante._nombre.toUpperCase().includes(searchTerm) ||
+                    estudiante._edad.toString().includes(searchTerm)
+                );
+            });
+            renderTable(filteredEstudiantes)
+        });
+
     })
 }
 
@@ -603,11 +959,17 @@ const alumnosExistentes = async () => {
                 agregarAlumno(est)
             })
         } catch (error){
-            console.log('Error al cargar el fetch: ', error)
+            console.error('Error al cargar el fetch: ', error)
         } 
     } 
 }
 
+/**
+ * Función principal que inicializa la aplicación.
+ * Llama a dos funciones claves: 
+ *  - `alumnosExistentes`: para cargar los datos de los alumnos.
+ *  - `cargaDOM`: para cargar el contenido inicial en el DOM.
+ */
 const app = () => {
     alumnosExistentes()
     cargaDOM()
