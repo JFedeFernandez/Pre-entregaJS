@@ -51,9 +51,6 @@ SweetAlert2 es una librería para crear alertas personalizadas que mejoran la ex
 
 - **Documentación**: [SweetAlert2 Documentation](https://sweetalert2.github.io/)
 
-
-- **Documentación**: [SweetAlert2 Documentation](https://sweetalert2.github.io/)
-
 # Cómo Ejecutar
 1) Clona o descarga este repositorio.
 2) Asegúrate de que todos los archivos estén en el mismo directorio, incluyendo `index.html`, `estudiantes.json` y `main.js`.
