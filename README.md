@@ -1,10 +1,10 @@
 # Sistema de Gestión de Estudiantes
 
 Este proyecto es una aplicación de gestión de alumnos. Permite realizar las siguientes acciones a través de eventos en la interfaz de usuario:
-- Agregar nuevos alumnos mediante un formulario dinámico.
-- Editar alumnos existentes mostrando una tabla interactiva para seleccionar y modificar datos.
-- Eliminar alumnos de una lista interactiva.
-- Listar todos los alumnos con opciones para buscar y ordenar por diferentes criterios.
+- **Agregar** nuevos alumnos mediante un formulario dinámico.
+- **Editar** alumnos existentes mostrando una tabla interactiva para seleccionar y modificar datos.
+- **Eliminar** alumnos de una lista interactiva.
+- **Listar** todos los alumnos con opciones para buscar y ordenar por diferentes criterios.
 
 El código principal maneja la creación de estos eventos, el renderizado dinámico de los formularios y las tablas, y el procesamiento de los datos almacenados.
 
