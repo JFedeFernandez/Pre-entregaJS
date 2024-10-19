@@ -1,8 +1,8 @@
 export class Estudiante {
 
     constructor (apellido, nombre, edad, dni) {
-        this._apellido = apellido
-        this._nombre = nombre
+        this._apellido = apellido.toUpperCase()
+        this._nombre = nombre.toUpperCase()
         this._edad = edad
         this._dni = dni
     }
